@@ -63,8 +63,13 @@ class OAuth2AuthExchangeRequest(object):
             "redirect_uri": self.api.redirect_uri
         }
         if scope:
-            client_params.update(scope = ' '.join(scope))
-        url_params = urllib.urlencode(client_params)
+            client_params.update(scope = scope)
+        else:
+            client_params.update(scope = 'basic')
+        
+        url_params = ''
+        for key in client_params:
+            url_params += '&%s=%s' % (key, urllib.quote(client_params[key]))
         return "%s?%s" % (self.api.authorize_url, url_params)
 
     def _data_for_exchange(self, code=None, username=None, password=None, scope=None, user_id=None):
@@ -74,6 +79,7 @@ class OAuth2AuthExchangeRequest(object):
             "redirect_uri": self.api.redirect_uri,
             "grant_type": "authorization_code"
         }
+
         if code:
             client_params.update(code=code)
         elif username and password:
@@ -84,6 +90,11 @@ class OAuth2AuthExchangeRequest(object):
                 client_params.update(scope = ' '.join(scope))
         elif user_id:
             client_params.update(user_id = user_id)
+
+        # url_params = ''
+        # for key in client_params:
+        #     url_params += '&%s=%s' % (key, urllib.quote(client_params[key]))
+
         return urllib.urlencode(client_params)
 
     def get_authorize_url(self, scope=None):
